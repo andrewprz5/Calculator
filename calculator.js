@@ -2,21 +2,25 @@ let result;
 
 function add(x, y) {
     result = x + y;
+    result.toFixed(10);
     return result;
 };
 
 function subtract(x, y) {
     result = x - y;
+    result.toFixed(10);
     return result;
 };
 
 function multiply(x, y) {
     result = x * y;
+    result.toFixed(10);
     return result;
 };
 
 function divide(x, y) {
     result = x / y;
+    result.toFixed(10);
     return result;
 };
 
@@ -26,10 +30,31 @@ function operate(oper, a, b) {
 
 const num_btns = document.getElementsByClassName("number-btn");
 const text = document.getElementById("text");
+const dml_btn = document.getElementById(".");
+const zero = document.querySelector("#zero");
 let displayValue;
+
+function containsDec() {
+    if (text.value.includes(".")) {
+        removeDecEL();
+    }
+};
+
+function shortenDigits() {
+    if (text.value.length > 10) {
+        text.value = text.value.substring(0,10);
+    }
+};
+
+function checkZero() {
+    if (text.value == "0") {
+        text.value = text.value.substring(0,0);
+    };
+}
 
 for (const num_btn of num_btns) {
     num_btn.addEventListener('click', function() {
+        dml_btn.addEventListener('click', decimalInput);
         if (pairValues.pair1 && pairValues.pair2) {
             text.value += '' + this.innerHTML;
             displayValue = text.value;
@@ -42,6 +67,9 @@ for (const num_btn of num_btns) {
             text.value += '' + this.innerHTML;
             displayValue = text.value;
         }
+        containsDec();
+        shortenDigits();
+        checkZero();
     })
 };
 
@@ -50,8 +78,11 @@ const displayBox = document.querySelector(".display-box");
 let pairValues = {};
 
 for (const oper_btn of oper_btns) {
-    oper_btn.addEventListener('click', function() {
-        if (pairValues.pair1 && !(pairValues.pair2)) {
+    oper_btn.addEventListener('click', function(event) {
+        if (text.value == "" || pairValues.pair1 && text.value == "") {
+            event.preventDefault();
+        }
+        if (pairValues.pair1 && !(pairValues.pair2) && !(text.value == "")) {
             pairValues.pair2 = displayValue; 
             let calcPair1 = Number(pairValues.pair1);
             let calcPair2 = Number(pairValues.pair2);
@@ -67,7 +98,7 @@ for (const oper_btn of oper_btns) {
             text.value = "";
             displayBox.innerHTML = "" + result + " " + oper_btn.id;
             pairValues.operator = oper_btn.id; 
-        } else if (!(pairValues.pair1) && !(pairValues.pair2)){
+        } else if (!(pairValues.pair1) && !(pairValues.pair2) && !(text.value == "")){
             pairValues.pair1 = displayValue;
             displayBox.innerHTML = "" + displayValue + " " + oper_btn.id;
             text.value = "";
@@ -96,9 +127,12 @@ eq_btn.addEventListener('click', function() {
             } else if (pairValues.operator === "/") {
                 operate(divide, calcPair1, calcPair2);
             }
-            text.value = "" + result;
+            if (calcPair2 === 0) {
+                text.value = "EXCUSE ME?";
+            } else {
+                text.value = "" + result;
+            }
             displayBox.innerHTML += " " + displayValue;
-            console.log(pairValues);
         }
     } 
 });
@@ -111,8 +145,6 @@ clr_btn.addEventListener('click', function() {
     pairValues = {};
 });
 
-const dml_btn = document.getElementById(".");
-
 function decimalInput() {
     text.value += ".";
     removeDecEL();
@@ -122,28 +154,9 @@ function removeDecEL() {
     dml_btn.removeEventListener('click', decimalInput);
 };
 
-function secondPairCheck() {
-    if (!(pairValues.pair1) && !(pairValues.pair2)) {
-        dml_btn.addEventListener('click', decimalInput);
-    } else if (pairValues.pair1 && !(pairValues.pair2)) {
-        dml_btn.addEventListener('click', decimalInput);
-    }
-};
+const bckspc_btn = document.querySelector(".backspace-btn");
 
-
-// PROBLEMS:
-// How can I add decimal for both pairs when I enabled the event listener to happen only once;
-// another way of saying how can I allow EL to happen per number in pairValues obj?
-
-// QUESTIONS:
-// Is there any way I can use the operator.id and unstring it so I can set it up as the 
-// "operator" parameter for the operate() function? Will make my code shorter if I can figure
-// it out
-
-// TO-DO:
-// 1. add decimal button & round them so they don't overflow the screen 
-// 2. display "error" message if user divides number by 0
-// 3. make sure user doesn't input more than one decimal in a number (e.g. 1.24.52)
-// 4. add backspace button 
-// 5. add keyboard support (give it a shot)
-// 6. Make CSS Design cooler
+bckspc_btn.addEventListener('click', function() {
+    text.value = text.value.substring(0, text.value.length - 1);
+    displayValue = text.value;
+});
